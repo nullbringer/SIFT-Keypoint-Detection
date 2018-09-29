@@ -22,7 +22,7 @@ def convolve_img(img, kernel):
 
 	output_image = np.zeros(img.shape, np.uint8)
 
-	# igniring edge pixels for now.
+	# ignoring edge pixels for now.
 	# add padding zero
 
 	for i in range(1,height-1):
@@ -156,8 +156,6 @@ def generate_octavs(image_1,sigma_table):
 
 def compute_DoG():
 
-
-
 	for i in range(0,4):
 		for j in range(1,5):
 
@@ -167,7 +165,47 @@ def compute_DoG():
 			write_image(img_higher_blur-img_lower_blur,'Dog_octav'+ str(j)+'_'+ str(i))
 
 
+def find_maxima(original_img):
 
+
+	dog_octav_1_0 = cv2.imread("Dog_octav1_0.png", 0)
+	dog_octav_1_1 = cv2.imread("Dog_octav1_1.png", 0)
+	dog_octav_1_2 = cv2.imread("Dog_octav1_2.png", 0)
+	dog_octav_1_3 = cv2.imread("Dog_octav1_3.png", 0)
+
+
+
+
+	height, width = dog_octav_1_1.shape
+
+
+	# ignoring edge pixels for now.
+	# add padding zero
+
+	for h in range(1,height-1):
+		for w in range(1, width-1):
+
+			# to compare dog_octav_1_1
+			# comparing 26 neighbours
+			is_maxima = True
+
+			for i in range(h-1,h+2):
+				for j in range(w-1,w+2):
+					if (dog_octav_1_1[h][w] < dog_octav_1_1[i][j]) or (dog_octav_1_1[h][w] < dog_octav_1_0[i][j]) or (dog_octav_1_1[h][w] < dog_octav_1_2[i][j]):
+						is_maxima = False
+						break
+
+				if not is_maxima:
+					break
+
+			if is_maxima:
+				original_img[h][w] = 255
+
+	print_image(original_img,'keypoints')
+			
+
+
+			
 
 
 
@@ -194,7 +232,8 @@ def main():
 	
 
 	#generate_octavs(task_2_img, sigma_table);
-	compute_DoG()
+	#compute_DoG()
+	find_maxima(task_2_img)
 
 
 	print('done!!!')
