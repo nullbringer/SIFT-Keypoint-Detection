@@ -10,6 +10,9 @@ def print_image(img, image_name):
 	cv2.imshow(image_name, img)
 	cv2.waitKey(0)
 	cv2.destroyAllWindows()
+	
+
+def write_image(img, image_name):
 	cv2.imwrite(image_name + '.png',img)
 
 
@@ -69,10 +72,9 @@ def gaussian(x, mu, sigma):
   return exp( -(((x-mu)/(sigma))**2)/2.0 )
 
 
-def get_gaussian_kernel():
+def get_gaussian_kernel(sigma):
 
 	kernel_radius = 1 
-	sigma = 2. 
 
 	# compute the actual kernel elements
 	hkernel = [gaussian(x, kernel_radius, sigma) for x in range(2*kernel_radius+1)]
@@ -111,37 +113,45 @@ def resize_image_to_half(img):
 		i_op+=1
 
 	
-	print_image(output_image,'output_image')
+	#print_image(output_image,'output_image')
 	return output_image
 
 
 
-def generate_gaussian_blur_for_an_image():
+def generate_gaussian_blur_for_an_image(img, octav_id, sigma_row):
 
-	return
+
+	for i in range(len(sigma_row)):
+
+		gussian_blurred_img = convolve_img(img, get_gaussian_kernel(sigma_row[i]))
+		write_image(gussian_blurred_img,'gussian_blurred_img_'+ octav_id +'_'+str(i))
+
 
 
 
 def generate_octavs(image_1,sigma_table):
 	
-	# octav 1: original image
+	# octav 1: original image 
 
-	#generate_gaussian_blur_for_an_image(image_1,)
+	generate_gaussian_blur_for_an_image(image_1,'octav_1', sigma_table[0])
 
 
 
 	# octav 2: original image/2
 	image_2 = resize_image_to_half(image_1)
+	generate_gaussian_blur_for_an_image(image_2,'octav_2', sigma_table[1])
 
 
 
 
 	# octav 3: original image/3
 	image_3 = resize_image_to_half(image_2)
+	generate_gaussian_blur_for_an_image(image_3,'octav_3', sigma_table[2])
 
 
 	# octav 4: original image/4
 	image_4 = resize_image_to_half(image_3)
+	generate_gaussian_blur_for_an_image(image_4,'octav_4', sigma_table[3])
 
 
 
@@ -168,13 +178,9 @@ def main():
 	
 
 	generate_octavs(task_2_img, sigma_table);
+	print('done!!!')
 
 
-
-
-
-	#guss_img = convolve_img(task_2_img, get_gaussian_kernel())
-	#print_image(guss_img,'guss_img')
 
 
 
