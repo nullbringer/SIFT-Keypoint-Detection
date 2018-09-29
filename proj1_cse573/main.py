@@ -124,7 +124,7 @@ def generate_gaussian_blur_for_an_image(img, octav_id, sigma_row):
 	for i in range(len(sigma_row)):
 
 		gussian_blurred_img = convolve_img(img, get_gaussian_kernel(sigma_row[i]))
-		write_image(gussian_blurred_img,'gussian_blurred_img_'+ octav_id +'_'+str(i))
+		write_image(gussian_blurred_img,'gb_img_'+ octav_id +'_'+str(i))
 
 
 
@@ -144,14 +144,30 @@ def generate_octavs(image_1,sigma_table):
 
 
 
-	# octav 3: original image/3
+	# octav 3: original image/4
 	image_3 = resize_image_to_half(image_2)
 	generate_gaussian_blur_for_an_image(image_3,'octav_3', sigma_table[2])
 
 
-	# octav 4: original image/4
+	# octav 4: original image/8
 	image_4 = resize_image_to_half(image_3)
 	generate_gaussian_blur_for_an_image(image_4,'octav_4', sigma_table[3])
+
+
+def compute_DoG():
+
+
+
+	for i in range(0,4):
+		for j in range(1,5):
+
+			img_lower_blur = cv2.imread("gb_img_octav_" + str(j) + "_" + str(i) + ".png", 0)
+			img_higher_blur = cv2.imread("gb_img_octav_" + str(j) + "_" + str(i+1) + ".png", 0)
+			
+			write_image(img_higher_blur-img_lower_blur,'Dog_octav'+ str(j)+'_'+ str(i))
+
+
+
 
 
 
@@ -177,7 +193,10 @@ def main():
 
 	
 
-	generate_octavs(task_2_img, sigma_table);
+	#generate_octavs(task_2_img, sigma_table);
+	compute_DoG()
+
+
 	print('done!!!')
 
 
