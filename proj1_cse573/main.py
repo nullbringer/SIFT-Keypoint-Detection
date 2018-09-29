@@ -133,12 +133,14 @@ def generate_octavs(image_1,sigma_table):
 	
 	# octav 1: original image 
 
+	write_image(image_1,'octav_1_original')
 	generate_gaussian_blur_for_an_image(image_1,'octav_1', sigma_table[0])
 
 
 
 	# octav 2: original image/2
 	image_2 = resize_image_to_half(image_1)
+	write_image(image_2,'octav_2_original')
 	generate_gaussian_blur_for_an_image(image_2,'octav_2', sigma_table[1])
 
 
@@ -146,11 +148,13 @@ def generate_octavs(image_1,sigma_table):
 
 	# octav 3: original image/4
 	image_3 = resize_image_to_half(image_2)
+	write_image(image_3,'octav_3_original')
 	generate_gaussian_blur_for_an_image(image_3,'octav_3', sigma_table[2])
 
 
 	# octav 4: original image/8
 	image_4 = resize_image_to_half(image_3)
+	write_image(image_4,'octav_4_original')
 	generate_gaussian_blur_for_an_image(image_4,'octav_4', sigma_table[3])
 
 
@@ -162,46 +166,56 @@ def compute_DoG():
 			img_lower_blur = cv2.imread("gb_img_octav_" + str(j) + "_" + str(i) + ".png", 0)
 			img_higher_blur = cv2.imread("gb_img_octav_" + str(j) + "_" + str(i+1) + ".png", 0)
 			
-			write_image(img_higher_blur-img_lower_blur,'Dog_octav'+ str(j)+'_'+ str(i))
+			write_image(img_higher_blur-img_lower_blur,'dog_octav_'+ str(j)+'_'+ str(i))
 
 
-def find_maxima(original_img):
-
-
-	dog_octav_1_0 = cv2.imread("Dog_octav1_0.png", 0)
-	dog_octav_1_1 = cv2.imread("Dog_octav1_1.png", 0)
-	dog_octav_1_2 = cv2.imread("Dog_octav1_2.png", 0)
-	dog_octav_1_3 = cv2.imread("Dog_octav1_3.png", 0)
+def find_maxima():
 
 
 
+	#traversing 4 octavs
+	for octav_num in range(1,5):
+		
 
-	height, width = dog_octav_1_1.shape
+		# traversing 2 middle layers
+		for layer in range(1,3):
+			
+			output_image = cv2.imread("octav_" + str(octav_num) + "_original.png", 0)
 
 
-	# ignoring edge pixels for now.
-	# add padding zero
+			dog_top = cv2.imread("dog_octav_" + str(octav_num) + "_" + str(layer-1) + ".png", 0)
+			dog_middle = cv2.imread("dog_octav_" + str(octav_num) + "_"+ str(layer) + ".png", 0)
+			dog_bottom = cv2.imread("dog_octav_" + str(octav_num) + "_" + str(layer+1) + ".png", 0)
 
-	for h in range(1,height-1):
-		for w in range(1, width-1):
 
-			# to compare dog_octav_1_1
-			# comparing 26 neighbours
-			is_maxima = True
 
-			for i in range(h-1,h+2):
-				for j in range(w-1,w+2):
-					if (dog_octav_1_1[h][w] < dog_octav_1_1[i][j]) or (dog_octav_1_1[h][w] < dog_octav_1_0[i][j]) or (dog_octav_1_1[h][w] < dog_octav_1_2[i][j]):
-						is_maxima = False
-						break
+			height, width = dog_middle.shape
 
-				if not is_maxima:
-					break
 
-			if is_maxima:
-				original_img[h][w] = 255
+			# traversing image
+			# ignoring edge pixels for now.
+			# add padding zero
 
-	print_image(original_img,'keypoints')
+			for h in range(1,height-1):
+				for w in range(1, width-1):
+
+					
+					# traversing and comparing 26 neighbours
+					is_maxima = True
+
+					for i in range(h-1,h+2):
+						for j in range(w-1,w+2):
+							if (dog_middle[h][w] < dog_middle[i][j]) or (dog_middle[h][w] < dog_top[i][j]) or (dog_middle[h][w] < dog_bottom[i][j]):
+								is_maxima = False
+								break
+
+						if not is_maxima:
+							break
+
+					if is_maxima:
+						output_image[h][w] = 255
+
+			print_image(output_image,'keypoints')
 			
 
 
@@ -233,7 +247,7 @@ def main():
 
 	#generate_octavs(task_2_img, sigma_table);
 	#compute_DoG()
-	find_maxima(task_2_img)
+	find_maxima()
 
 
 	print('done!!!')
