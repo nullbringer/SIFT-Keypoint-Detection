@@ -239,9 +239,6 @@ def find_marked_maxima_minima(dog_top, dog_middle, dog_bottom, scale_multiplier,
 
 	height, width = dog_middle.shape
 
-	print(np.max(dog_middle))
-	print(np.min(dog_middle))
-
 
 	# traversing image
 	# ignoring edge pixels for now.
@@ -270,20 +267,20 @@ def find_marked_maxima_minima(dog_top, dog_middle, dog_bottom, scale_multiplier,
 
 			if is_maxima:
 				original_img[h*scale_multiplier][w*scale_multiplier] = 255
-			# else:
+			else:
 
-			# 	is_minima = False
+				is_minima = False
 
-			# 	for i in range(h-1,h+2):
-			# 		for j in range(w-1,w+2):
-			# 			if (dog_middle[h][w] > dog_middle[i][j]) or (dog_middle[h][w] > dog_top[i][j]) or (dog_middle[h][w] > dog_bottom[i][j]):
-			# 				is_minima = False
-			# 				break
+				for i in range(h-1,h+2):
+					for j in range(w-1,w+2):
+						if (dog_middle[h][w] > dog_middle[i][j]) or (dog_middle[h][w] > dog_top[i][j]) or (dog_middle[h][w] > dog_bottom[i][j]):
+							is_minima = False
+							break
 
-			# 		if not is_minima:
-			# 			break
-			# 	if is_minima:
-			# 		original_img[h*scale_multiplier][w*scale_multiplier] = 255
+					if not is_minima:
+						break
+				if is_minima:
+					original_img[h*scale_multiplier][w*scale_multiplier] = 255
 
 	#print_image(original_img,'keypoints'+str(layer)+str(h)+str(w))
 	return original_img
@@ -321,61 +318,99 @@ def find_keypoints(original_img, list_of_dog):
 
 	write_image(original_img,'keypoints')
 
+def match_template(original_image, laplacian_img, template, output_folder):
+
+	w, h = template.shape[::-1]
+
+
+	# All the 6 methods for comparison in a list
+	methods = ['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR',
+	            'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
+
+	for meth in methods:
+
+		oi = original_image.copy()
+		img = laplacian_img.copy()
+		method = eval(meth)
+
+		# Apply template Matching
+		res = cv2.matchTemplate(img,template,method)
+
+		min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+
+		if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
+		    top_left = min_loc
+		else:
+		    top_left = max_loc
+		bottom_right = (top_left[0] + w, top_left[1] + h)
+
+		cv2.rectangle(oi,top_left, bottom_right, 255, 2)
+
+		write_image(oi, output_folder + meth)
 
 
 def find_cursor():
 
 
-	for img_no in range(1,16):
+	#Set 1 Images
 
-		original_image = cv2.imread('task3/pos_' + str(img_no) + '.jpg')
+	# for img_no in range(1,16):
 
-		img_source = cv2.imread('task3/pos_' + str(img_no) + '.jpg',0)
+	# 	original_image = cv2.imread('task3/pos_' + str(img_no) + '.jpg')
+
+	# 	img_source = cv2.imread('task3/pos_' + str(img_no) + '.jpg',0)
 		
-		#template = cv2.imread('task3/template.png',0)
-		template = cv2.imread('task3/temp.jpg',0)
+	# 	#template = cv2.imread('task3/template.png',0)
+	# 	template = cv2.imread('task3/temp.jpg',0)
 
 		
-		laplacian = cv2.Laplacian(cv2.GaussianBlur(img_source, (3,3),0),cv2.CV_8U)
-		img2 = laplacian.copy()
-		template = cv2.Laplacian(template,cv2.CV_8U)
+	# 	laplacian_img = cv2.Laplacian(cv2.GaussianBlur(img_source, (3,3),0),cv2.CV_8U)
+		
+	# 	template = cv2.Laplacian(template,cv2.CV_8U)
 
-		# print_image(laplacian,"sdf")
-		# print_image(template,"sdfsdfsdf")
+		
+	# 	output_folder = 'task3_set1/pos_' + str(img_no)
+
+	# 	match_template(original_image, laplacian_img, template, output_folder)
+
+
+
+
+	#Set 2 Images
+
+	for sub_set in range(1,4):
+		
+
+		for img_no in range(1,7):
+
+			original_image = cv2.imread('task3/task3_bonus/t' + str(sub_set) + '_' + str(img_no) + '.jpg')
+
+
+
+			img_source =  cv2.imread('task3/task3_bonus/t' + str(sub_set) + '_' + str(img_no) + '.jpg', 0)
+			
+			#template = cv2.imread('task3/template.png',0)
+			template = cv2.imread('task3/task3_bonus/t' + str(sub_set) + '_x.jpg',0)
+
+			
+			laplacian_img = cv2.Laplacian(cv2.GaussianBlur(img_source, (3,3),0),cv2.CV_8U)
+			
+			template = cv2.Laplacian(template,cv2.CV_8U)
+
+			
+			output_folder = 'task3_set2/t' + str(sub_set) + '/pos_' + str(img_no)
+
+			match_template(original_image, laplacian_img, template, output_folder)
 
 
 
 
 
-		w, h = template.shape[::-1]
 
-		#print_image(img_source,"sdfs")
 
-		# All the 6 methods for comparison in a list
-		methods = ['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR',
-		            'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
 
-		for meth in methods:
 
-			oi = original_image.copy()
-			img = img2.copy()
-			method = eval(meth)
 
-			# Apply template Matching
-			res = cv2.matchTemplate(img,template,method)
-
-			min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-
-			# If the method is TM_SQDIFF or TM_SQDIFF_NORMED, take minimum
-			if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
-			    top_left = min_loc
-			else:
-			    top_left = max_loc
-			bottom_right = (top_left[0] + w, top_left[1] + h)
-
-			cv2.rectangle(oi,top_left, bottom_right, 255, 2)
-			#print_image(img,"hello")
-			write_image(oi, 'task3/output/' + str(img_no) + meth)
 
 
 
@@ -405,12 +440,12 @@ def main():
 
 	#generate_octavs(task_2_img, sigma_table);
 
-	list = []
-	compute_DoG(list)
-	find_keypoints(task_2_img, list)
+	# list = []
+	# compute_DoG(list)
+	# find_keypoints(task_2_img, list)
 
 
-	# #find_cursor()
+	find_cursor()
 
 
 
