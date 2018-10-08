@@ -23,8 +23,8 @@ def convolve_img(img, kernel,kernel_radius):
 
 
 	height, width = img.shape
-
-	output_image = np.zeros(img.shape, np.int)
+	output_image = [[0 for col in range(width)] for row in range(height)]
+	
 
 	# ignoring edge pixels for now.
 	# add padding zero
@@ -44,17 +44,17 @@ def convolve_img(img, kernel,kernel_radius):
 			output_image[i][j] = sum
 
 
-	return output_image
+	return np.asarray(output_image)
 
 
 
 def edge_detection_x(img):
 
-	x_kernel = np.array([				
-							[-1, 0, 1], 
-							[-2, 0, 2], 
-							[-1, 0 , 1] 
-						], np.float32)  
+	x_kernel = [				
+					[-1, 0, 1], 
+					[-2, 0, 2], 
+					[-1, 0 , 1] 
+				]  
 
 	edge_x_img = convolve_img(img,x_kernel,1)
 
@@ -67,25 +67,25 @@ def edge_detection_x(img):
 			edge_x_img[i][j] = abs(edge_x_img[i][j])
 			max_val = max(max_val,edge_x_img[i][j])
 
-	pos_edge_x = np.zeros(img.shape, np.float32)
+	pos_edge_x = [[0.0 for col in range(w)] for row in range(h)]
 
 	for i in range(0,h):
 		for j in range(1,w):
 			pos_edge_x[i][j] = edge_x_img[i][j]/max_val
 
 	
-	print_image(pos_edge_x,'x_edge_detection_normalized')
+	print_image(np.asarray(pos_edge_x),'x_edge_detection_normalized')
 
 
 
 
 def edge_detection_y(img):
 
-	y_kernel = np.array([				
-							[-1, -2, -1], 
-							[0, 0, 0], 
-							[1, 2 , 1] 
-						], np.float32)  
+	y_kernel = [				
+					[-1, -2, -1], 
+					[0, 0, 0], 
+					[1, 2 , 1] 
+				] 
 
 
 	edge_y_img = convolve_img(img,y_kernel,1)
@@ -99,14 +99,14 @@ def edge_detection_y(img):
 			edge_y_img[i][j] = abs(edge_y_img[i][j])
 			max_val = max(max_val,edge_y_img[i][j])
 
-	pos_edge_y = np.zeros(img.shape, np.float32)
+	pos_edge_y = [[0.0 for col in range(w)] for row in range(h)]
 
 	for i in range(0,h):
 		for j in range(1,w):
 			pos_edge_y[i][j] = edge_y_img[i][j]/max_val
 
 	
-	print_image(pos_edge_y,'y_edge_detectioin_normalized')
+	print_image(np.asarray(pos_edge_y),'y_edge_detectioin_normalized')
 
 
 def gaussian(x, mu, sigma):
@@ -134,7 +134,7 @@ def resize_image_to_half(img):
 
 	height, width = img.shape
 
-	output_image = np.zeros((int(height/2), int(width/2)), np.int)
+	output_image = [[0 for col in range(int(width/2))] for row in range(int(height/2))]
 
 
 	i_op = 0
@@ -154,7 +154,7 @@ def resize_image_to_half(img):
 		i_op+=1
 
 	
-	return output_image
+	return np.asarray(output_image)
 
 
 
@@ -217,7 +217,8 @@ def compute_DoG(list):
 
 
 			height, width = img_lower_blur.shape
-			difference = np.zeros(img_lower_blur.shape, dtype=int)
+
+			difference = [[0 for col in range(width)] for row in range(height)]
 
 
 			for h in range(0,height):
@@ -227,6 +228,7 @@ def compute_DoG(list):
 
 
 			
+			difference = np.asarray(difference)
 			write_image(difference,'dog_octav_'+ str(j)+'_'+ str(i))
 			
 			list.append(difference)
@@ -354,24 +356,24 @@ def find_cursor():
 
 	#Set 1 Images
 
-	# for img_no in range(1,16):
+	for img_no in range(1,16):
 
-	# 	original_image = cv2.imread('task3/pos_' + str(img_no) + '.jpg')
+		original_image = cv2.imread('task3/pos_' + str(img_no) + '.jpg')
 
-	# 	img_source = cv2.imread('task3/pos_' + str(img_no) + '.jpg',0)
+		img_source = cv2.imread('task3/pos_' + str(img_no) + '.jpg',0)
 		
-	# 	#template = cv2.imread('task3/template.png',0)
-	# 	template = cv2.imread('task3/temp.jpg',0)
-
-		
-	# 	laplacian_img = cv2.Laplacian(cv2.GaussianBlur(img_source, (3,3),0),cv2.CV_8U)
-		
-	# 	template = cv2.Laplacian(template,cv2.CV_8U)
+		#template = cv2.imread('task3/template.png',0)
+		template = cv2.imread('task3/temp.jpg',0)
 
 		
-	# 	output_folder = 'task3_set1/pos_' + str(img_no)
+		laplacian_img = cv2.Laplacian(cv2.GaussianBlur(img_source, (3,3),0),cv2.CV_8U)
+		
+		template = cv2.Laplacian(template,cv2.CV_8U)
 
-	# 	match_template(original_image, laplacian_img, template, output_folder)
+		
+		output_folder = 'task3_set1/pos_' + str(img_no)
+
+		match_template(original_image, laplacian_img, template, output_folder)
 
 
 
@@ -428,24 +430,25 @@ def main():
 
 	task_2_img = cv2.imread("task2.jpg", 0)
 
-	sigma_table = np.array([				
-							[1/sqrt(2), 1, sqrt(2), 2, 2*sqrt(2)], 
-							[sqrt(2), 2,  2*sqrt(2), 4, 4*sqrt(2)], 
-							[2*sqrt(2), 4, 4*sqrt(2), 8, 8*sqrt(2)],
-							[4*sqrt(2), 8, 8*sqrt(2), 16, 16*sqrt(2)]
-						])
+	sigma_table = [				
+						[1/sqrt(2), 1, sqrt(2), 2, 2*sqrt(2)], 
+						[sqrt(2), 2,  2*sqrt(2), 4, 4*sqrt(2)], 
+						[2*sqrt(2), 4, 4*sqrt(2), 8, 8*sqrt(2)],
+						[4*sqrt(2), 8, 8*sqrt(2), 16, 16*sqrt(2)]
+					]
 
 
 	
 
-	#generate_octavs(task_2_img, sigma_table);
+	generate_octavs(task_2_img, sigma_table);
 
-	# list = []
-	# compute_DoG(list)
-	# find_keypoints(task_2_img, list)
+	list = []
+	compute_DoG(list)
+	find_keypoints(task_2_img, list)
 
 
-	find_cursor()
+	# find_cursor()
+
 
 
 
