@@ -290,19 +290,6 @@ def find_marked_maxima_minima(dog_top, dog_middle, dog_bottom, scale_multiplier,
 def find_keypoints(original_img, list_of_dog):
 
 
-	# scale_multiplier = 1
-
-	# #traversing 4 octavs
-	# for octav_num in range(1,5):
-
-	# 	# traversing 2 middle layers
-	# 	for layer in range(1,3):
-			
-	# 		original_img = find_marked_maxima_minima(list_of_dog[], scale_multiplier, original_img)
-
-	# 	scale_multiplier = scale_multiplier*2
-
-
 	find_marked_maxima_minima(list_of_dog[0],list_of_dog[1],list_of_dog[2], 1, original_img)
 	find_marked_maxima_minima(list_of_dog[1],list_of_dog[2],list_of_dog[3], 1, original_img)
 
@@ -320,12 +307,13 @@ def find_keypoints(original_img, list_of_dog):
 
 	write_image(original_img,'keypoints')
 
+
+
 def match_template(original_image, laplacian_img, template, output_folder):
 
 	w, h = template.shape[::-1]
 
 
-	# All the 6 methods for comparison in a list
 	methods = ['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR',
 	            'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
 
@@ -350,70 +338,63 @@ def match_template(original_image, laplacian_img, template, output_folder):
 
 		write_image(oi, output_folder + meth)
 
+def match_driver(range_l, range_u, source_prefix, op_prefix, template):
 
-def find_cursor():
+	for img_no in range(range_l, range_u):
 
+		original_image = cv2.imread(source_prefix + str(img_no) + '.jpg')
 
-	#Set 1 Images
-
-	for img_no in range(1,16):
-
-		original_image = cv2.imread('task3/pos_' + str(img_no) + '.jpg')
-
-		img_source = cv2.imread('task3/pos_' + str(img_no) + '.jpg',0)
-		
-		#template = cv2.imread('task3/template.png',0)
-		template = cv2.imread('task3/temp.jpg',0)
-
+		img_source = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
 		
 		laplacian_img = cv2.Laplacian(cv2.GaussianBlur(img_source, (3,3),0),cv2.CV_8U)
 		
-		template = cv2.Laplacian(template,cv2.CV_8U)
-
-		
-		output_folder = 'task3_set1/pos_' + str(img_no)
+		output_folder = op_prefix + str(img_no)
 
 		match_template(original_image, laplacian_img, template, output_folder)
 
 
 
 
+def find_cursor():
+
+
+	#Set 1 Images
+
+	template = cv2.imread('task3/temp1.jpg',0)
+	template = cv2.Laplacian(template,cv2.CV_8U)
+
+	#positive images
+
+	match_driver(1,16, 'task3/pos_', 'task3_set1/pos_', template)
+
+	#negative images
+
+	match_driver(1,7, 'task3/neg_', 'task3_set1/neg_', template)
+	match_driver(8,11, 'task3/neg_', 'task3_set1/neg_', template)
+
+
 	#Set 2 Images
 
-	for sub_set in range(1,4):
-		
+	#positive images
+	template = cv2.imread('task3/task3_bonus/t1_x.jpg',0)
+	template = cv2.Laplacian(template,cv2.CV_8U)
 
-		for img_no in range(1,7):
+	match_driver(1,7, 'task3/task3_bonus/t1_', 'task3_set2/t1/pos_', template)
 
-			original_image = cv2.imread('task3/task3_bonus/t' + str(sub_set) + '_' + str(img_no) + '.jpg')
+	template = cv2.imread('task3/task3_bonus/t2_x.jpg',0)
+	template = cv2.Laplacian(template,cv2.CV_8U)
 
+	match_driver(1,7, 'task3/task3_bonus/t2_', 'task3_set2/t2/pos_', template)
 
+	template = cv2.imread('task3/task3_bonus/t3_x.jpg',0)
+	template = cv2.Laplacian(template,cv2.CV_8U)
 
-			img_source =  cv2.imread('task3/task3_bonus/t' + str(sub_set) + '_' + str(img_no) + '.jpg', 0)
-			
-			#template = cv2.imread('task3/template.png',0)
-			template = cv2.imread('task3/task3_bonus/t' + str(sub_set) + '_x.jpg',0)
+	match_driver(1,7, 'task3/task3_bonus/t3_', 'task3_set2/t3/pos_', template)
 
-			
-			laplacian_img = cv2.Laplacian(cv2.GaussianBlur(img_source, (3,3),0),cv2.CV_8U)
-			
-			template = cv2.Laplacian(template,cv2.CV_8U)
+	#negative images
 
-			
-			output_folder = 'task3_set2/t' + str(sub_set) + '/pos_' + str(img_no)
-
-			match_template(original_image, laplacian_img, template, output_folder)
-
-
-
-
-
-
-
-
-
-
-
+	match_driver(1,7, 'task3/task3_bonus/neg_', 'task3_set2/neg/neg_', template)
+	match_driver(8,13, 'task3/task3_bonus/neg_', 'task3_set2/neg/neg_', template)
 
 
 
@@ -422,11 +403,11 @@ def main():
 	#task 1
 
 	task_1_img = cv2.imread("task1.png", 0)
-	# edge_detection_x(task_1_img)
-	# edge_detection_y(task_1_img)
+	edge_detection_x(task_1_img)
+	edge_detection_y(task_1_img)
 
 
-	# #task 2
+	#task 2
 
 	task_2_img = cv2.imread("task2.jpg", 0)
 
@@ -444,27 +425,12 @@ def main():
 
 	list = []
 	compute_DoG(list)
+
 	find_keypoints(task_2_img, list)
 
+	#task 3
 
-	# find_cursor()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	
-
+	find_cursor()
 
 
 
